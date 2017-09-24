@@ -46,7 +46,7 @@ uint8_t adc[NUM_ANALOG][2];
 uint8_t out[NUM_OUTPUT];
 
 volatile int bufn,obufn;
-volatile uint16_t adc_buf[NUM_ANALOG][256];   // 4 buffers of 256 readings
+volatile uint16_t adc_buf[NUM_ANALOG][256];   // 6 buffers of 256 readings
 uint16_t adc_values[NUM_ANALOG * 2];
 uint16_t adc_out_vals[NUM_ANALOG];
 
@@ -67,26 +67,34 @@ void sys_early_setup()
 
     NumADCSamples = 64;
 
-    dig[0]=48;
-    dig[1]=49;
-    dig[2]=50;
-    dig[3]=51;
-    adc[0][0] = 3;
+    dig[0] = digi_1;
+    dig[1] = digi_2;
+    dig[2] = digi_3;
+    dig[3] = digi_4;
+    dig[4] = digi_5;
+    dig[5] = digi_6;
+
+    adc[0][0] = ana1;
     adc[0][1] = 255;
-    adc[1][0] = 2;
+    adc[1][0] = ana2;
     adc[1][1] = 255;
-    adc[2][0] = 1;
+    adc[2][0] = ana3;
     adc[2][1] = 255;
-    adc[3][0] = 0;
+    adc[3][0] = ana4;
     adc[3][1] = 255;
-    out[0] = 4;
-    out[1] = 5;
-    out[2] = 6;
-    out[3] = 7;
-    out[4] = 2;
-    out[5] = 3;
-    out[6] = 8;
-    out[7] = 9;
+    adc[4][0] = ana5;
+    adc[4][1] = 255;
+    adc[5][0] = ana6;
+    adc[5][1] = 255;
+
+    out[0] = digo_1;
+    out[1] = digo_2;
+    out[2] = digo_3;
+    out[3] = digo_4;
+    out[4] = digo_5;
+    out[5] = digo_6;
+//    out[6] = 8;
+//    out[7] = 9;
 
     for (i = 0; i < NUM_DIGITAL; i++) pinMode(dig[i], INPUT);
 

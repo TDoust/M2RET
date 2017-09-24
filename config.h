@@ -52,9 +52,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define EEPROM_ADDR     0
 #define EEPROM_VER      0x18
 
-#define NUM_ANALOG  4
-#define NUM_DIGITAL 4
-#define NUM_OUTPUT  8
+#define NUM_ANALOG  6   // Changed TD original value 4. M2 has 6 analogue inputs therfore set to 6
+#define NUM_DIGITAL 6   // Changed TD original value 4. M2 has no digital inputs therfore set to 6
+#define NUM_OUTPUT  6   // Changed TD original value 8. M2 has 6 digital outputs therfore set to 6
 
 // ************************************************************************************************	//
 //										M2 Pin Definations											//
@@ -87,6 +87,34 @@ const uint8_t SWCan_Interrupt = SWC_INT;	//INT = SWC_nINT = C16 = Digital pin 47
 const uint8_t SWCan_Chip_Select = SPI0_CS3;	//CS = SPI0_nCS3 = B23 = Digital pin 78
 
 //const uint8_t Voltage_Sense = V_SENSE;
+
+// Added TD 24/09/2017 for setup in sys_io.cpp to make digital Input pins generic for Macchina M2
+// Digital Inputs at present these are dummy pins
+const uint8_t digi_1 = 50;
+const uint8_t digi_2 = 50;
+const uint8_t digi_3 = 50;
+const uint8_t digi_4 = 50;
+const uint8_t digi_5 = 50;
+const uint8_t digi_6 = 50;
+
+// Added TD 24/09/2017 for setup in sys_io.cpp to make Analogue Input pins generic for Macchina M2
+// Analogue Inputs for Macchina M2
+const uint8_t ana1 = ANALOG_1;
+const uint8_t ana2 = ANALOG_2;
+const uint8_t ana3 = ANALOG_3;
+const uint8_t ana4 = ANALOG_4;
+const uint8_t ana5 = ANALOG_5;
+const uint8_t ana6 = ANALOG_6;
+
+// Added TD 24/09/2017 for setup in sys_io.cpp to make Digital Output pins generic for Macchina M2
+// Digital Outputs for Macchina M2
+const uint8_t digo_1 = GPIO1;
+const uint8_t digo_2 = GPIO2;
+const uint8_t digo_3 = GPIO3;
+const uint8_t digo_4 = GPIO4;
+const uint8_t digo_5 = GPIO5;
+const uint8_t digo_6 = GPIO6;
+
 
 
 // ************************************************************************************************	//
