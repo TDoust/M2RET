@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 /*
-List of AT commands to support:
+List of AT commands to support: ELM327
 AT E0 (turn echo off)
 AT H (0/1) - Turn headers on or off - headers are used to determine how many ECU√≠s present (hint: only send one response to 0100 and emulate a single ECU system to save time coding)
 AT L0 (Turn linefeeds off - just use CR)
@@ -68,7 +68,7 @@ I				print the ID
 LP				go to low power mode
 M0				memory off
 M1				memory on
-RD				read the stored dara
+RD				read the stored data
 SD hh			store data byte hh
 
 --- OBD Commands ---
@@ -188,7 +188,38 @@ WM xxyyzzaa ! ! ! ! ! ! ! ! ! ! !
 WM xxyyzzaabb ! ! ! ! ! ! ! ! ! ! !
 WM xxyyzzaabbcc ! ! ! ! ! ! ! ! ! ! !
 */
+/*AT command set for Bluetooth 4.0 BLE Pro Xbee Form factor (Master/Slave and iBeacon)
 
+AT Command:
+
+AT (Test command)
+AT+BAUD (Query/Set Baud rate)
+AT+CHK (Query/Set parity)
+AT+STOP (Query/Set stop bit)
+AT+UART (Query/Set uart rate,parity, stop bit)
+AT+PIO (Query/Set PIO pins status Long command)
+AT+PIO (Query/Set a PIO pin sttus Short command)
+AT+NAME (Query/Set device friendly name)
+AT+PIN (Query/Set device password code)
+AT+DEFAULT (Reset device settings)
+AT+RESTART (Restart device)
+AT+ROLE (Query/Set device mode, Master or Slave)
+AT+CLEAR (Clear remote device address if has)
+AT+CONLAST (Try to connect last connect succeed device)
+AT+VERSION (Show software version information)
+AT+HELP (Show help information)
+AT+RADD (Query remote device address)
+AT+LADD (Query self address)
+AT+IMME (Query/Set Whether the device boot immediately)
+AT+WORK (if device not working, start work, use with AT+IMME command)
+AT+TCON (Query/Set Try to connect remote times)
+AT+TYPE (Query/Set device work type, transceiver mode or remote mode)
+AT+START (Switch remote control mode to transceiver mode)
+AT+BUFF (Query/Set How to use buffer data, Duing mode switching time)
+AT+FILT (Query/Set device filter when device searching) A
+AT+COD (Query/Set Class of Device. eg: phone, headset etc.)
+
+*/
 
 #ifndef ELM327_H_
 #define ELM327_H_

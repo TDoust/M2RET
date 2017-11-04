@@ -272,200 +272,208 @@ void SerialConsole::handleLawicelCmd()
     tokenizeCmdString();
 
     switch (cmdBuffer[0]) {
-    case 't': //transmit standard frame
-        outFrame.id = parseHexString(cmdBuffer + 1, 3);
-        outFrame.length = cmdBuffer[4] - '0';
-        outFrame.extended = false;
-        if (outFrame.length < 0) outFrame.length = 0;
-        if (outFrame.length > 8) outFrame.length = 8;
-        for (int data = 0; data < outFrame.length; data++) {
-            outFrame.data.bytes[data] = parseHexString(cmdBuffer + 5 + (2 * data), 2);
-        }
-        Can0.sendFrame(outFrame);
-        if (SysSettings.lawicelAutoPoll) SerialUSB.print("z");
-        break;
-    case 'T': //transmit extended frame
-        outFrame.id = parseHexString(cmdBuffer + 1, 8);
-        outFrame.length = cmdBuffer[9] - '0';
-        outFrame.extended = false;
-        if (outFrame.length < 0) outFrame.length = 0;
-        if (outFrame.length > 8) outFrame.length = 8;
-        for (int data = 0; data < outFrame.length; data++) {
-            outFrame.data.bytes[data] = parseHexString(cmdBuffer + 10 + (2 * data), 2);
-        }
-        Can0.sendFrame(outFrame);
-        if (SysSettings.lawicelAutoPoll) SerialUSB.print("Z");
-        break;
-    case 'S': 
-        if (!SysSettings.lawicellExtendedMode) {
-            //setup canbus baud via predefined speeds
-            val = parseHexCharacter(cmdBuffer[1]);
-            switch (val) {
-            case 0:
-                settings.CAN0Speed = 10000;
-                break;
-            case 1:
-                settings.CAN0Speed = 20000;
-                break;
-            case 2:
-                settings.CAN0Speed = 50000;
-                break;
-            case 3:
-                settings.CAN0Speed = 100000;
-                break;
-            case 4:
-                settings.CAN0Speed = 125000;
-                break;
-            case 5:
-                settings.CAN0Speed = 250000;
-                break;
-            case 6:
-                settings.CAN0Speed = 500000;
-                break;
-            case 7:
-                settings.CAN0Speed = 800000;
-                break;
-            case 8:
-                settings.CAN0Speed = 1000000;
-                break;
-            }
-        }
-        else { //LAWICEL V2 - Send packet out of specified bus - S <Bus> <ID> <Data0> <Data1> <...>
-            uint8_t bytes[8];
-            uint32_t id;
-            int numBytes = 0;
-            id = strtol(tokens[2], nullptr, 16);
-            for (int b = 0; b < 8; b++) {
-                if (tokens[3 + b][0] != 0) {
-                    bytes[b] = strtol(tokens[3 + b], nullptr, 16);
-                    numBytes++;
-                }
-                else break; //break for loop because we're obviously done.
-            }
-            if (!stricmp(tokens[1], "CAN0")) {
-                CAN_FRAME outFrame;
-                outFrame.id = id;
-                outFrame.length = numBytes;
+        case 't':{ //transmit standard frame
+                outFrame.id = parseHexString(cmdBuffer + 1, 3);
+                outFrame.length = cmdBuffer[4] - '0';
                 outFrame.extended = false;
-                for (int b = 0; b < numBytes; b++) outFrame.data.bytes[b] = bytes[b];
+                if(outFrame.length < 0) outFrame.length = 0;
+                if(outFrame.length > 8) outFrame.length = 8;
+                for(int data = 0; data < outFrame.length; data++){
+                    outFrame.data.bytes[data] = parseHexString(cmdBuffer + 5 + (2 * data), 2);
+                }
                 Can0.sendFrame(outFrame);
+                if(SysSettings.lawicelAutoPoll) SerialUSB.print("z");
+                break;
             }
-            if (!stricmp(tokens[1], "CAN1")) {
-                CAN_FRAME outFrame;
-                outFrame.id = id;
-                outFrame.length = numBytes;
+        case 'T':{ //transmit extended frame
+                outFrame.id = parseHexString(cmdBuffer + 1, 8);
+                outFrame.length = cmdBuffer[9] - '0';
                 outFrame.extended = false;
-                for (int b = 0; b < numBytes; b++) outFrame.data.bytes[b] = bytes[b];
-                Can1.sendFrame(outFrame);                
-            }
-            if (!stricmp(tokens[1], "SWCAN")) {
-                SWFRAME swFrame;
-                swFrame.id = id;
-                swFrame.length = numBytes;
-                swFrame.extended = false;
-                for (int b = 0; b < numBytes; b++) swFrame.data.bytes[b] = bytes[b];
-                SWCAN.EnqueueTX(swFrame);
-            }
-            if (!stricmp(tokens[1], "LIN1")) {
-            }
-            if (!stricmp(tokens[1], "LIN2")) {
-            }
-        }
-    case 's': //setup canbus baud via register writes (we can't really do that...)
-        //settings.CAN0Speed = 250000;
-        break;
-    case 'r': //send a standard RTR frame (don't really... that's so deprecated its not even funny)
-        break;
-    case 'R': 
-        if (SysSettings.lawicellExtendedMode) { //Lawicel V2 - Set that we want to receive traffic from the given bus - R <BUSID>
-            if (!stricmp(tokens[1], "CAN0")) SysSettings.lawicelBusReception[0] = true;
-            if (!stricmp(tokens[1], "CAN1")) SysSettings.lawicelBusReception[1] = true; 
-            if (!stricmp(tokens[1], "SWCAN")) SysSettings.lawicelBusReception[2] = true;
-            if (!stricmp(tokens[1], "LIN1")) SysSettings.lawicelBusReception[3] = true;
-            if (!stricmp(tokens[1], "LIN2")) SysSettings.lawicelBusReception[4] = true;                                            
-        }
-        else { //Lawicel V1 - send extended RTR frame (NO! DON'T DO IT!)
-        }
-        break;
-    case 'X': //Set autopoll off/on
-        if (cmdBuffer[1] == '1') SysSettings.lawicelAutoPoll = true;
-        else SysSettings.lawicelAutoPoll = false;
-        break;
-    case 'W': //Dual or single filter mode
-        break; //don't actually support this mode
-    case 'm': //set acceptance mask - these things seem to be odd and aren't actually implemented yet
-    case 'M': 
-        if (SysSettings.lawicellExtendedMode) { //Lawicel V2 - Set filter mask - M <busid> <Mask> <FilterID> <Ext?>
-            int mask = strtol(tokens[2], nullptr, 16);
-            int filt = strtol(tokens[3], nullptr, 16);
-            if (!stricmp(tokens[1], "CAN0")) {
-                if (!stricmp(tokens[4], "X")) Can0.setRXFilter(0, filt, mask, true);
-                    else Can0.setRXFilter(0, filt, mask, false);
-            }           
-            if (!stricmp(tokens[1], "CAN1")) {
-                if (!stricmp(tokens[4], "X")) Can1.setRXFilter(0, filt, mask, true);
-                    else Can1.setRXFilter(0, filt, mask, false);                
-            }
-            if (!stricmp(tokens[1], "SWCAN")) {
-                if (!stricmp(tokens[4], "X")) 
-                {
-                    SWCAN.SetRXFilter(0, filt, true);
-                    SWCAN.SetRXMask(0, mask, true);
+                if(outFrame.length < 0) outFrame.length = 0;
+                if(outFrame.length > 8) outFrame.length = 8;
+                for(int data = 0; data < outFrame.length; data++){
+                    outFrame.data.bytes[data] = parseHexString(cmdBuffer + 10 + (2 * data), 2);
                 }
-                else 
-                {
-                    SWCAN.SetRXFilter(0, filt, false);
-                    SWCAN.SetRXMask(0, mask, false);
+                Can0.sendFrame(outFrame);
+                if(SysSettings.lawicelAutoPoll) SerialUSB.print("Z");
+                break;
+            }
+        case 'S':{  // setup can bus speed or extended mode Send packet out of specified bus
+                if(!SysSettings.lawicellExtendedMode){
+                    //setup canbus baud via predefined speeds
+                    val = parseHexCharacter(cmdBuffer[1]);
+                    switch(val){
+                        case 0:
+                            settings.CAN0Speed = 10000;
+                            break;
+                        case 1:
+                            settings.CAN0Speed = 20000;
+                            break;
+                        case 2:
+                            settings.CAN0Speed = 50000;
+                            break;
+                        case 3:
+                            settings.CAN0Speed = 100000;
+                            break;
+                        case 4:
+                            settings.CAN0Speed = 125000;
+                            break;
+                        case 5:
+                            settings.CAN0Speed = 250000;
+                            break;
+                        case 6:
+                            settings.CAN0Speed = 500000;
+                            break;
+                        case 7:
+                            settings.CAN0Speed = 800000;
+                            break;
+                        case 8:
+                            settings.CAN0Speed = 1000000;
+                            break;
+                    }
+                } else{ //LAWICEL V2 - Send packet out of specified bus - S <Bus> <ID> <Data0> <Data1> <...>
+                    uint8_t bytes[8];
+                    uint32_t id;
+                    int numBytes = 0;
+                    id = strtol(tokens[2], nullptr, 16);
+                    for(int b = 0; b < 8; b++){
+                        if(tokens[3 + b][0] != 0){
+                            bytes[b] = strtol(tokens[3 + b], nullptr, 16);
+                            numBytes++;
+                        } else break; //break for loop because we're obviously done.
+                    }
+                    if(!stricmp(tokens[1], "CAN0")){
+                        CAN_FRAME outFrame;
+                        outFrame.id = id;
+                        outFrame.length = numBytes;
+                        outFrame.extended = false;
+                        for(int b = 0; b < numBytes; b++) outFrame.data.bytes[b] = bytes[b];
+                        Can0.sendFrame(outFrame);
+                    }
+                    if(!stricmp(tokens[1], "CAN1")){
+                        CAN_FRAME outFrame;
+                        outFrame.id = id;
+                        outFrame.length = numBytes;
+                        outFrame.extended = false;
+                        for(int b = 0; b < numBytes; b++) outFrame.data.bytes[b] = bytes[b];
+                        Can1.sendFrame(outFrame);
+                    }
+                    if(!stricmp(tokens[1], "SWCAN")){
+                        SWFRAME swFrame;
+                        swFrame.id = id;
+                        swFrame.length = numBytes;
+                        swFrame.extended = false;
+                        for(int b = 0; b < numBytes; b++) swFrame.data.bytes[b] = bytes[b];
+                        SWCAN.EnqueueTX(swFrame);
+                    }
+                    if(!stricmp(tokens[1], "LIN1")){
+                    }
+                    if(!stricmp(tokens[1], "LIN2")){
+                    }
                 }
             }
-            if (!stricmp(tokens[1], "LIN1")) {
-                //set mask on LIN. Can you do that?!
+        case 's':{//setup canbus baud via register writes (we can't really do that...)
+                //settings.CAN0Speed = 250000;
+                break;
             }
-            if (!stricmp(tokens[1], "LIN2")) {
-                //set mask on LIN if that's even possible?!
-            }            
-        }
-        else { //Lawicel V1 - set acceptance code
-        }        
-        break;
-    case 'H':
-        if (SysSettings.lawicellExtendedMode) { //Lawicel V2 - Halt reception of traffic from given bus - H <busid>
-            if (!stricmp(tokens[1], "CAN0")) SysSettings.lawicelBusReception[0] = false;
-            if (!stricmp(tokens[1], "CAN1")) SysSettings.lawicelBusReception[1] = false; 
-            if (!stricmp(tokens[1], "SWCAN")) SysSettings.lawicelBusReception[2] = false;
-            if (!stricmp(tokens[1], "LIN1")) SysSettings.lawicelBusReception[3] = false;
-            if (!stricmp(tokens[1], "LIN2")) SysSettings.lawicelBusReception[4] = false;                        
-        } 
-        break;        
-    case 'U': //set uart speed. We just ignore this. You can't set a baud rate on a USB CDC port
-        break; //also no action here
-    case 'Z': //Turn timestamp off/on
-        if (cmdBuffer[1] == '1') SysSettings.lawicelTimestamping = true;
-        else SysSettings.lawicelTimestamping =  false;
-        break;
-    case 'Q': //turn auto start up on/off - probably don't need to actually implement this at the moment.
-        break; //no action yet or maybe ever
-    case 'C': //Lawicel V2 - configure one of the buses - C <busid> <speed> <any additional needed params> 
-        if (SysSettings.lawicellExtendedMode) {
-            //at least two parameters separated by spaces. First BUS ID (CAN0, CAN1, SWCAN, etc) then speed (or more params separated by #'s)
-            int speed = atoi(tokens[2]);
-            if (!stricmp(tokens[1], "CAN0")) {
-                Can0.begin(speed, 255);
-            }           
-            if (!stricmp(tokens[1], "CAN1")) {
-                Can1.begin(speed, 255);
+        case 'r':{ //send a standard RTR frame (don't really... that's so deprecated its not even funny)
+                break;
             }
-            if (!stricmp(tokens[1], "SWCAN")) {
-                //can't set speed of SWCAN yet
+        case 'R':{  // receive traffic via given bus
+                if(SysSettings.lawicellExtendedMode){ //Lawicel V2 - Set that we want to receive traffic from the given bus - R <BUSID>
+                    if(!stricmp(tokens[1], "CAN0")) SysSettings.lawicelBusReception[0] = true;
+                    if(!stricmp(tokens[1], "CAN1")) SysSettings.lawicelBusReception[1] = true;
+                    if(!stricmp(tokens[1], "SWCAN")) SysSettings.lawicelBusReception[2] = true;
+                    if(!stricmp(tokens[1], "LIN1")) SysSettings.lawicelBusReception[3] = true;
+                    if(!stricmp(tokens[1], "LIN2")) SysSettings.lawicelBusReception[4] = true;
+                } else{ //Lawicel V1 - send extended RTR frame (NO! DON'T DO IT!)
+                }
+                break;
             }
-            if (!stricmp(tokens[1], "LIN1")) {
-                //can't set speed of LIN1 yet
+        case 'X':{ //Set autopoll off/on
+                if(cmdBuffer[1] == '1') SysSettings.lawicelAutoPoll = true;
+                else SysSettings.lawicelAutoPoll = false;
+                break;
             }
-            if (!stricmp(tokens[1], "LIN2")) {
-                //can't set speed of LIN2 yet
+        case 'W':{ //Dual or single filter mode
+                break; //don't actually support this mode
             }
-        }
-        break;
+        case 'm':{//set acceptance mask - these things seem to be odd and aren't actually implemented yet
+            }
+        case 'M':{
+                if(SysSettings.lawicellExtendedMode){ //Lawicel V2 - Set filter mask - M <busid> <Mask> <FilterID> <Ext?>
+                    int mask = strtol(tokens[2], nullptr, 16);
+                    int filt = strtol(tokens[3], nullptr, 16);
+                    if(!stricmp(tokens[1], "CAN0")){
+                        if(!stricmp(tokens[4], "X")) Can0.setRXFilter(0, filt, mask, true);
+                        else Can0.setRXFilter(0, filt, mask, false);
+                    }
+                    if(!stricmp(tokens[1], "CAN1")){
+                        if(!stricmp(tokens[4], "X")) Can1.setRXFilter(0, filt, mask, true);
+                        else Can1.setRXFilter(0, filt, mask, false);
+                    }
+                    if(!stricmp(tokens[1], "SWCAN")){
+                        if(!stricmp(tokens[4], "X")){
+                            SWCAN.SetRXFilter(0, filt, true);
+                            SWCAN.SetRXMask(0, mask, true);
+                        } else{
+                            SWCAN.SetRXFilter(0, filt, false);
+                            SWCAN.SetRXMask(0, mask, false);
+                        }
+                    }
+                    if(!stricmp(tokens[1], "LIN1")){
+                        //set mask on LIN. Can you do that?!
+                    }
+                    if(!stricmp(tokens[1], "LIN2")){
+                        //set mask on LIN if that's even possible?!
+                    }
+                } else{ //Lawicel V1 - set acceptance code
+                }
+                break;
+            }
+        case 'H':{
+                if(SysSettings.lawicellExtendedMode){ //Lawicel V2 - Halt reception of traffic from given bus - H <busid>
+                    if(!stricmp(tokens[1], "CAN0")) SysSettings.lawicelBusReception[0] = false;
+                    if(!stricmp(tokens[1], "CAN1")) SysSettings.lawicelBusReception[1] = false;
+                    if(!stricmp(tokens[1], "SWCAN")) SysSettings.lawicelBusReception[2] = false;
+                    if(!stricmp(tokens[1], "LIN1")) SysSettings.lawicelBusReception[3] = false;
+                    if(!stricmp(tokens[1], "LIN2")) SysSettings.lawicelBusReception[4] = false;
+                }
+                break;
+            }
+        case 'U':{//set uart speed. We just ignore this. You can't set a baud rate on a USB CDC port
+                break; //also no action here
+            }
+        case 'Z':{ //Turn timestamp off/on
+                if(cmdBuffer[1] == '1') SysSettings.lawicelTimestamping = true;
+                else SysSettings.lawicelTimestamping = false;
+                break;
+            }
+        case 'Q':{//turn auto start up on/off - probably don't need to actually implement this at the moment.
+                break; //no action yet or maybe ever
+            }
+        case 'C':{//Lawicel V2 - configure one of the buses - C <busid> <speed> <any additional needed params> 
+                if(SysSettings.lawicellExtendedMode){
+                    //at least two parameters separated by spaces. First BUS ID (CAN0, CAN1, SWCAN, etc) then speed (or more params separated by #'s)
+                    int speed = atoi(tokens[2]);
+                    if(!stricmp(tokens[1], "CAN0")){
+                        Can0.begin(speed, 255);
+                    }
+                    if(!stricmp(tokens[1], "CAN1")){
+                        Can1.begin(speed, 255);
+                    }
+                    if(!stricmp(tokens[1], "SWCAN")){
+                        //can't set speed of SWCAN yet
+                    }
+                    if(!stricmp(tokens[1], "LIN1")){
+                        //can't set speed of LIN1 yet
+                    }
+                    if(!stricmp(tokens[1], "LIN2")){
+                        //can't set speed of LIN2 yet
+                    }
+                }
+                break;
+            }
     }
     SerialUSB.write(13);
 }

@@ -28,8 +28,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define GVRET_H_
 
 #include <Arduino.h>
+#include <pins_arduino.h>
 #include "due_can.h"
 #include "sys_io.h"
+
 
 #ifdef __cplusplus
 extern "C" {

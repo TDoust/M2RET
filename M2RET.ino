@@ -39,6 +39,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "EEPROM.h"
 #include "SerialConsole.h"
+#include <variant.h>
 
 /*
 Notes on project:
@@ -65,7 +66,7 @@ EEPROMSettings settings;
 SystemSettings SysSettings;
 DigitalCANToggleSettings digToggleSettings;
 
-//file system on sdcard (HSCMI connected)
+//file system on sdcard (HSMCI connected)
 FileStore FS;
 
 SWcan SWCAN(SWCan_Chip_Select, SWCan_Interrupt);
@@ -237,13 +238,16 @@ void setSWCANWakeup()
 void setup()
 {
     //TODO: I don't remember why these two lines are here... anyone know?
-    pinMode(XBEE_PWM, OUTPUT);
-    digitalWrite(XBEE_PWM, LOW);
+    //pinMode(XBEE_PWM, OUTPUT);
+    //digitalWrite(XBEE_PWM, LOW);
 
     //delay(5000); //just for testing. Don't use in production
 
-    Serial.begin(115200);
-    
+    SerialUSB.begin(115200);
+    while(SerialUSB);
+    Serial.begin(115200);	// XBEE Serial speed
+    while(Serial);
+
     Wire.begin();
     SPI.begin();
 
@@ -352,7 +356,7 @@ void setup()
     SysSettings.lawicelTimestamping = false;
     SysSettings.lawicelPollCounter = 0;
     
-    //elmEmulator.setup();
+    elmEmulator.setup();
     m2WirelessInstalled = elmEmulator.testHardware();
     //	digitalWrite(XBEE_Program, HIGH);	// Ensure XBEE Module is not in Programming mode
     //	digitalWrite(XBEE_Reset, LOW);	// Reset the XBEE module
@@ -462,6 +466,17 @@ void toggleTXLED()
         setLED(SysSettings.LED_CANTX, SysSettings.txToggle);
     }
 }
+
+/*
+void serialEvent(){
+
+    // Serial data from XB_ can just be passed straight through
+    while(Serial.available()){
+        SerialUSB.write((uint8_t) Serial.read());
+        SerialUSB.flush();
+    }
+}
+*/
 
 /*
  * Pass bus load in percent 0 - 100

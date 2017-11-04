@@ -56,19 +56,19 @@ void ELM327Emu::setup() {
 
     tickCounter = 0;
     ibWritePtr = 0;
-    serialInterface->begin(115200);
+    //serialInterface->begin(115200);
 
     // !!!!!! Changes
-    pinMode(ELM_TX, OUTPUT);
-    digitalWrite(ELM_TX, LOW);
-    Serial.begin(115200);	// XBEE Serial speed
-                            //	serialInterface->begin(115200);	// XBEE Serial speed
+    //pinMode(ELM_TX, OUTPUT);
+    //digitalWrite(ELM_TX, LOW);
+
+    //serialInterface->begin(115200);	// XBEE Serial speed
 
     pinMode(XBEE_Reset, OUTPUT);	// XBEE reset pin
     digitalWrite(XBEE_Reset, HIGH);
 
     pinMode(XBEE_Program, OUTPUT);	// XBEE Boot Pin
-    digitalWrite(XBEE_Program, HIGH);
+    digitalWrite(XBEE_Program, HIGH);	// Ensure M2Wifi Module is not in Programming mode
 
     // reboot ESP32 on startup
     // Imperative to reset ESP32 Module in startup otherwiswe Communications with ESP32 will fail
@@ -76,7 +76,7 @@ void ELM327Emu::setup() {
     delay(500);	// Wait for XBEE module to reboot
     digitalWrite(XBEE_Reset, HIGH);
 
-    /// !!!!! Changes
+    /// !!!!! Changes !!!!!
 }
 
 /*
@@ -87,26 +87,25 @@ void ELM327Emu::setup() {
 bool ELM327Emu::testHardware(){
     int incoming = 0;
     // reboot ESP32
-    digitalWrite(XBEE_Program, HIGH);	// Ensure XBEE Module is not in Programming mode
-    digitalWrite(XBEE_Reset, LOW);		// Reset the XBEE module
-                                        //	digitalWrite(XBEE_Program, LOW);	// Place the WIFI module in boot mode
-    delay(500);							// give the XBEE module time to reboot
-    digitalWrite(XBEE_Reset, HIGH);
+    //digitalWrite(XBEE_Reset, LOW);		// Reset the M2Wifi module
+    //delay(500);							// give the XBEE module time to reboot
+    //digitalWrite(XBEE_Reset, HIGH);
 
-    /*
-    while(Serial.available()){	// This prints all of the data returned from the M2WiFI module
-    SerialUSB.write((uint8_t) Serial.read());
-    SerialUSB.flush();
-    }
-    */
-    while(Serial.available()){	// get the returned data from the XBEE interface
-                                //	while(Serial.available() > 0){	// get the returned data from the XBEE interface
-                                //		SerialUSB.print((uint8_t) Serial.read());	// This passes Binary
-        SerialUSB.write((uint8_t) serialInterface->read());	// This passes Printable ASCII
+//	digitalWrite(XBEE_Program, LOW);	// Place the WIFI module in boot mode
+
+/*
+    //while(Serial.available()){	// get the returned data from the XBEE interface
+    while(Serial.available() > 0){	// This prints all of the data returned from the M2WiFI module
+        SerialUSB.write((uint8_t) serialInterface->read());
+        //SerialUSB.write((uint8_t) Serial.read());
         SerialUSB.flush();
+    }
+*/
+    //while(Serial.available()){	// get the returned data from the XBEE interface
+    while(Serial.available() > 0){
 
-        //		incoming = serialInterface->read();
-        //		incoming = Serial.read();
+		//incoming = serialInterface->read();
+		incoming = Serial.read();
 
         if(incoming != -1){ //and there is no reason it should be -1
             if(incoming == 13 || ibWritePtr > 126){ // on CR or full buffer, process the line
@@ -124,9 +123,10 @@ bool ELM327Emu::testHardware(){
                     SerialUSB.write(incomingBuffer);
                     SerialUSB.write("\n");
                     SerialUSB.write(temp);
+                    // TODO check what version firmware is installed in M2Wifi module if not the same upload new version
                     return true;	// M2 WIFI Module exists
                 } else{	// port speed may be wrong try changing speed
-
+                    // TODO look at new port speed detect & change Nothing to do at this stage
                 }
             } else{ // add more characters
                 if(incoming != 10 && incoming != ' '){ // don't add a LF character or spaces. Strip them right out

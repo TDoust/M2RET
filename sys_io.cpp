@@ -46,7 +46,7 @@ uint8_t adc[NUM_ANALOG][2];
 uint8_t out[NUM_OUTPUT];
 
 volatile int bufn,obufn;
-volatile uint16_t adc_buf[NUM_ANALOG][256];   // 6 buffers of 256 readings
+volatile uint16_t adc_buf[NUM_ANALOG][256];   // 8 buffers of 256 readings
 uint16_t adc_values[NUM_ANALOG * 2];
 uint16_t adc_out_vals[NUM_ANALOG];
 
@@ -86,17 +86,25 @@ void sys_early_setup()
     adc[4][1] = 255;
     adc[5][0] = ana6;
     adc[5][1] = 255;
+    adc[6][0] = ana7;
+    adc[6][1] = 255;
+    adc[7][0] = ana8;
+    adc[7][1] = 255;
 
-    out[0] = digo_1;
-    out[1] = digo_2;
-    out[2] = digo_3;
-    out[3] = digo_4;
-    out[4] = digo_5;
-    out[5] = digo_6;
-//    out[6] = 8;
-//    out[7] = 9;
+    out[0] = digo_1;    //4
+    out[1] = digo_2;    //5
+    out[2] = digo_3;    //6
+    out[3] = digo_4;    //7
+    out[4] = digo_5;    //2
+    out[5] = digo_6;    //3
+    //out[6] = digo_7;    //8
+    //out[7] = digo_8;    //9
 
-    for (i = 0; i < NUM_DIGITAL; i++) pinMode(dig[i], INPUT);
+    for(i = 0; i < NUM_DIGITAL; i++){
+        if(dig[i] != 255){
+            pinMode(dig[i], INPUT);
+        }
+    }
 
     for (i = 0; i < NUM_OUTPUT; i++) {
         if (out[i] != 255) {
@@ -155,7 +163,7 @@ uint16_t getADCAvg(uint8_t which)
 }
 
 /*
-get value of one of the 4 analog inputs
+get value of one of the 8 analog inputs
 Uses a special buffer which has smoothed and corrected ADC values. This call is very fast
 because the actual work is done via DMA and then a separate polled step.
 */
@@ -168,7 +176,7 @@ uint16_t getAnalog(uint8_t which)
     return adc_out_vals[which];
 }
 
-//get value of one of the 4 digital inputs
+//get value of one of the 6 digital inputs
 boolean getDigital(uint8_t which)
 {
     if (which >= NUM_DIGITAL) which = 0;
@@ -248,7 +256,8 @@ void setupFastADC()
                   + (4 << 24) //tracking time (Value + 1) clocks
                   + (2 << 28);//transfer time ((Value * 2) + 3) clocks
 
-    ADC->ADC_CHER=0xF0; //enable A0-A3
+    //ADC->ADC_CHER=0xF0; //enable A0-A3
+    ADC->ADC_CHER= Analog_Channels_Enabled; //enable A0-A7
 
 
     NVIC_EnableIRQ(ADC_IRQn);

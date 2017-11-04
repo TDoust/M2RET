@@ -29,6 +29,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *      Author: Michael Neuweiler
  */
 
+//#define __MACCHINA_M2
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
@@ -52,8 +53,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define EEPROM_ADDR     0
 #define EEPROM_VER      0x18
 
-#define NUM_ANALOG  6   // Changed TD original value 4. M2 has 6 analogue inputs therfore set to 6
-#define NUM_DIGITAL 6   // Changed TD original value 4. M2 has no digital inputs therfore set to 6
+#define NUM_ANALOG  8   // Changed TD original value 4. M2 has 6 analogue inputs therfore set to 8. 6 standard analogue inputs + I_Sense & V_Sense
+#define NUM_DIGITAL 6   // Changed TD original value 4. M2 has no digital inputs therfore set to 6. Could use XBEE inputs instead
 #define NUM_OUTPUT  6   // Changed TD original value 8. M2 has 6 digital outputs therfore set to 6
 
 // ************************************************************************************************	//
@@ -77,6 +78,7 @@ const uint8_t ELM_TX = XBEE_TX;
 const uint8_t ELM_RX = XBEE_RX;
 const uint8_t XBEE_Program = XBEE_MULT4;	//XBEE programing pin
 const uint8_t XBEE_Reset = XBEE_RST;		//XBEE Reset pin
+
 const bool M2_Led_State = false;
 
 // Single Wire Can
@@ -88,25 +90,29 @@ const uint8_t SWCan_Chip_Select = SPI0_CS3;	//CS = SPI0_nCS3 = B23 = Digital pin
 
 //const uint8_t Voltage_Sense = V_SENSE;
 
-// Added TD 24/09/2017 for setup in sys_io.cpp to make digital Input pins generic for Macchina M2
-// Digital Inputs at present these are dummy pins
-const uint8_t digi_1 = 50;
-const uint8_t digi_2 = 50;
-const uint8_t digi_3 = 50;
-const uint8_t digi_4 = 50;
-const uint8_t digi_5 = 50;
-const uint8_t digi_6 = 50;
+// Added TD 24/09/2017 for setup in sys_io.cpp to configure digital Input pins for Macchina M2
+// Macchina has no digital inputs as yet so set as dummy pins
+// An alternative could be use XBEE inputs
+const uint8_t digi_1 = 255;
+const uint8_t digi_2 = 255;
+const uint8_t digi_3 = 255;
+const uint8_t digi_4 = 255;
+const uint8_t digi_5 = 255;
+const uint8_t digi_6 = 255;
 
-// Added TD 24/09/2017 for setup in sys_io.cpp to make Analogue Input pins generic for Macchina M2
+// Added TD 24/09/2017 for setup in sys_io.cpp to configure Analogue Input pins for Macchina M2
 // Analogue Inputs for Macchina M2
+const uint8_t Analog_Channels_Enabled = 0xFF; //ADC->ADC_CHER=0xFF; //enable A0-A7
 const uint8_t ana1 = ANALOG_1;
 const uint8_t ana2 = ANALOG_2;
 const uint8_t ana3 = ANALOG_3;
 const uint8_t ana4 = ANALOG_4;
 const uint8_t ana5 = ANALOG_5;
 const uint8_t ana6 = ANALOG_6;
+const uint8_t ana7 = V_SENSE;
+const uint8_t ana8 = I_SENSE;
 
-// Added TD 24/09/2017 for setup in sys_io.cpp to make Digital Output pins generic for Macchina M2
+// Added TD 24/09/2017 for setup in sys_io.cpp to configure Digital Output pins for Macchina M2
 // Digital Outputs for Macchina M2
 const uint8_t digo_1 = GPIO1;
 const uint8_t digo_2 = GPIO2;
